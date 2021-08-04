@@ -1,19 +1,6 @@
-  <script type="text/x-red" data-template-name="socketio-config">
-    <div class="form-row">
-      <label for="node-config-input-host"><i class="fa fa-globe"></i> Host</label>
-      <input type="text" id="node-config-input-host">
-    </div>
-    <div class="form-row">
-      <label for="node-config-input-path"><i class="fa fa-folder"></i> Path</label>
-      <input type="text" id="node-config-input-path">
-    </div>
-  </script>
-
-<!-- Connector -->
   <script type="text/javascript">
-    /*global RED*/
     RED.nodes.registerType('socketio-connector', {
-      category: 'input',
+      category: 'shaq',
       inputs: 0,
       outputs: 1,
       color: "#D8BFD8",
@@ -22,28 +9,35 @@
       defaults: {
         server: {
           value: "",
-          type: "string"
+          required: true
         },
-        query: {
+        key: {
           value: "",
           required: false
         },
-	path: {
+        email: {
           value: "",
           required: false
         },
-        namespace: {
-          value: "",
+        path: {
+          default: "/shaq",
+          value: "/shaq",
+          type: "string",
           required: false
         },
         name: {
-          value: "",
-          validate: RED.validators.regex(/[a-zA-Z0-9_]+/),
-          required: true
+          value: ""
         }
       },
-      label: function() {
-          return this.name || "Socket.IO Connector";
+      oneditprepare: function () {
+        $("#node-input-server").typedInput({
+          type:"jsonata",
+          types:["jsonata"],
+          typeField: "#node-input-server-type"
+        })
+      },
+      label: function () {
+        return this.name + this.path || "SHAQ Connector";
       }
     });
   </script>
@@ -51,24 +45,24 @@
   <script type="text/x-red" data-template-name="socketio-connector">
     <div class="form-row">
       <label for="node-input-server"><i class="fa fa-globe"></i> Server</label>
-      <input type="text" id="node-input-server" placeholder="Server">
+      <input type="text" id="node-input-server">
+      <input type="hidden" id="node-input-server-type">
     </div>
     <div class="form-row">
-      <label for="node-input-path"><i class="icon-tasks"></i> path</label>
+      <label for="node-input-email"><i class="icon-tasks"></i> email</label>
+      <input type="text" id="node-input-email" placeholder="Email">
+    </div>
+    <div class="form-row">
+      <label for="node-input-key"><i class="icon-tasks"></i> key</label>
+      <input type="text" id="node-input-key" placeholder="Key">
+    </div>    
+    <div class="form-row">
+      <label for="node-input-path"><i class="fa fa-tag"></i> path</label>
       <input type="text" id="node-input-path" placeholder="Path">
-    </div>
-    <div class="form-row">
-      <label for="node-input-query"><i class="icon-tasks"></i> query</label>
-      <input type="text" id="node-input-query" placeholder="Query">
-    </div>
-    <div class="form-row">
-      <label for="node-input-namespace"><i class="icon-tasks"></i> namespace</label>
-      <input type="text" id="node-input-namespace" placeholder="Namespace">
     </div>
     <div class="form-row">
       <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
       <input type="text" id="node-input-name" placeholder="Name">
-      <span class="help-block hidden">Connection name already used in flows</span>
     </div>
   </script>
 
@@ -80,11 +74,9 @@
     <pre>Socket.IO Connector -> Socket.IO Listener -> Payload</pre>
   </script>
 
-<!-- Listener -->
   <script type="text/javascript">
-    /*global RED*/
     RED.nodes.registerType('socketio-listener', {
-      category: 'function',
+      category: 'shaq',
       inputs: 1,
       outputs: 1,
       color: "#D8BFD8",
@@ -99,8 +91,15 @@
           value: ""
         }
       },
-      label: function() {
-          return ( this.name || this.eventname ) || "Socket.IO listener";
+      oneditprepare: function () {
+        $("#node-input-eventname").typedInput({
+            type:"jsonata",
+            types:["jsonata"],
+            typeField: "#node-input-eventname-type"
+          })
+      },
+      label: function () {
+        return this.name || "Listener";
       }
     });
   </script>
@@ -109,6 +108,7 @@
     <div class="form-row">
       <label for="node-input-eventname"><i class="icon-tasks"></i> Event Name</label>
       <input type="text" id="node-input-eventname" placeholder="Event Name">
+      <input type="hidden" id="node-input-eventname-type">
     </div>
     <div class="form-row">
       <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
@@ -117,17 +117,15 @@
   </script>
 
   <script type="text/x-red" data-help-name="socketio-listener">
-      <p>Socket.IO Listener</p>
+    <p>Socket.IO Listener</p>
       <p>It's works only in couple with Socket.io Connector</p>
       <pre>Socket.IO Connector -> Socket.IO Listener -> Payload</pre>
       <p>The <code>msg.payload</code> will be whole content emitted through 'event name' that you specified</p>
   </script>
 
-<!-- Emitter -->
   <script type="text/javascript">
-    /*global RED*/
     RED.nodes.registerType('socketio-emitter', {
-      category: 'function',
+      category: 'shaq',
       inputs: 1,
       outputs: 0,
       color: "#D8BFD8",
@@ -138,8 +136,8 @@
           value: ""
         }
       },
-      label: function() {
-          return ( this.name ) || "Socket.IO emitter";
+      label: function () {
+        return (this.name) || "Socket.IO emitter";
       }
     });
   </script>
@@ -152,7 +150,7 @@
   </script>
 
   <script type="text/x-red" data-help-name="socketio-emitter">
-      <p>Socket.IO emitter</p>
+    <p>Socket.IO emitter</p>
       <p>Use payload as what you want to send, also you need set msg.connectionName and msg.eventName</p>
       <pre>
         {
@@ -165,4 +163,3 @@
         }
       </pre>
   </script>
-
